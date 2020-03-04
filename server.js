@@ -9,6 +9,7 @@ const product = require('./products.json'); //external json data from mockaroo a
 const dbProduct = require('./models/products.js');
 const User = require('./models/users.js');
 
+
 const port = 3000;
 
 
@@ -101,6 +102,15 @@ app.post('/loginUser',(req,res) =>{
 }); //findOne
 }); //post
 
+
+
+
+// get all product
+app.get('/dbProduct', (req, res)=> {
+  dbProduct.find().then(result => {
+    res.send(result);
+  });
+});
 
 
 // keep this alwasy at the bottom so that you can see the errors reported
