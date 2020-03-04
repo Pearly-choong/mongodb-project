@@ -103,6 +103,25 @@ app.post('/loginUser',(req,res) =>{
 }); //post
 
 
+// register products
+app.post('/registerProduct', (req,res)=> {
+ // checking if product is found in the db already
+  dbProduct.findOne({productname:req.body.productname},(err, productResult)=> {
+    if (productResult){
+      res.send('Product is not available. Please try again!');
+    } else {
+      const dbProduct = new dbProduct({
+        _id : new mongoose.Types.ObjectId,
+        productname : req.body.productname,
+        price : req.body.price
+      });
+      //save to database and notify the user accordingly
+      dbProduct.save().then(result => {
+        res.send(result);
+      }).catch(err => res.send(err));
+    }
+  })
+});
 
 
 // get all product
