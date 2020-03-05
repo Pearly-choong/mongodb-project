@@ -6,7 +6,7 @@ const cors = require('cors'); //to include cross origin request
 const bcryptjs = require('bcryptjs'); //to hash and compare password in an encryted form
 const config = require('./config.json'); //to store credentials
 const product = require('./products.json'); //external json data from mockaroo api
-const dbProduct = require('./models/products.js');
+const dbProducts = require('./models/products.js');
 const User = require('./models/users.js');
 
 
@@ -103,20 +103,20 @@ app.post('/loginUser',(req,res) =>{
 }); //post
 
 
-// register products
-app.post('/registerProduct', (req,res)=> {
+// add new products
+app.post('/newProduct', (req,res)=> {
  // checking if product is found in the db already
-  dbProduct.findOne({productname:req.body.productname},(err, productResult)=> {
+  dbProducts.findOne({productname:req.body.productname},(err, productResult)=> {
     if (productResult){
-      res.send('Product is not available. Please try again!');
+      res.send('Product is already in database. Please try again!');
     } else {
-      const dbProduct = new dbProduct({
+      const shopProduct = new dbProducts({
         _id : new mongoose.Types.ObjectId,
         productname : req.body.productname,
         price : req.body.price
       });
       //save to database and notify the user accordingly
-      dbProduct.save().then(result => {
+      shopProduct.save().then(result => {
         res.send(result);
       }).catch(err => res.send(err));
     }
@@ -124,12 +124,80 @@ app.post('/registerProduct', (req,res)=> {
 });
 
 
-// get all product
-app.get('/dbProduct', (req, res)=> {
-  dbProduct.find().then(result => {
+// get all products
+app.get('/ProductsFromDB', (req, res)=> {
+  dbProducts.find().then(result => {
     res.send(result);
   });
 });
+
+
+//delete a products
+app.delete('/deleteProduct/:id',(req,res) => {
+  const idParam = req.params.id;
+  dbProducts.findOne({_id:idParam}, (err, product) => { //_id refers to mongodb
+    if (product) {
+      dbProducts.deleteOne({_id:idParam}, err => {
+        res.send('deleted');
+      });
+    } else {
+      res.send('not found');
+    }
+  }).catch(err => res.send(err));
+});
+
+
+// update products
+app.patch('/updateProduct/:id',(req,res)=> {
+  const idParam = req.params.id;
+  dbProducts.findById(idParam,(err,product)=> {
+    const updatedProduct = {
+      productname:req.body.productname,
+      price : req.body.price
+    };
+    dbProducts.updateOne({_id:idParam}, updatedProduct).then(result => {
+      res.send(result);
+    }).catch(err => res.send(err));
+  }).catch(err => res.send('not found'));
+});
+
+
+// update user
+app.patch('/updateUser/:id',(req,res)=> {
+  const idParam = req.params.id;
+  User.findById(idParam,(err,user)=> {
+    const updatedUser = {
+      username:req.body.username,
+      email : req.body.email,
+      password : req.body.password
+    };
+    User.updateOne({_id:idParam}, updatedUser).then(result => {
+      res.send(result);
+    }).catch(err => res.send(err));
+  }).catch(err => res.send('not found'));
+});
+
+
+
+// // get product by id
+// app.get('/product_id/p=:id',(req,res)=>{
+//   Product.find().then(result => {
+//     const idParam = req.params.id;
+//     var filteredArray = [];
+//     for (var i = 0; i < result.length; i++){
+//       if (idParam === result[i].id.toString()) {
+//         filteredArray.push(result[i]);
+//       }
+//     } if(filteredArray.toString() === ""){
+//       res.send('Invalid parameter');
+//     } else {
+//       res.send(filteredArray);
+//     }
+//   })
+//
+// });
+
+
 
 
 // keep this alwasy at the bottom so that you can see the errors reported
