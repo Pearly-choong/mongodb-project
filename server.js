@@ -11,7 +11,7 @@ const User = require('./models/users.js');
 
 
 const port = 3000;
-
+// const part = 8080;  //run at localhost
 
 //connect to db
 // const mongodbURI = 'mongodb+srv://pearlydb:<password>@pearly-cpl-yceqt.mongodb.net/test?retryWrites=true&w=majority'
