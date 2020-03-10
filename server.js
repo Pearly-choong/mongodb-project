@@ -6,7 +6,7 @@ const cors = require('cors'); //to include cross origin request
 const bcryptjs = require('bcryptjs'); //to hash and compare password in an encryted form
 const config = require('./config.json'); //to store credentials
 const product = require('./products.json'); //external json data from mockaroo api
-const dbProducts = require('./models/products.js');
+const Product = require('./models/products.js');
 const User = require('./models/users.js');
 
 
@@ -106,14 +106,15 @@ app.post('/loginUser',(req,res) =>{
 // add new products
 app.post('/newProduct', (req,res)=> {
  // checking if product is found in the db already
-  dbProducts.findOne({productname:req.body.productname},(err, productResult)=> {
+  Product.findOne({productname:req.body.productname},(err, productResult)=> {
     if (productResult){
       res.send('Product is already in database. Please try again!');
     } else {
-      const shopProduct = new dbProducts({
+      const shopProduct = new Product({
         _id : new mongoose.Types.ObjectId,
         productname : req.body.productname,
-        price : req.body.price
+        price : req.body.price,
+        user_id : req.body.userId
       });
       //save to database and notify the user accordingly
       shopProduct.save().then(result => {
@@ -126,7 +127,7 @@ app.post('/newProduct', (req,res)=> {
 
 // get all products
 app.get('/ProductsFromDB', (req, res)=> {
-  dbProducts.find().then(result => {
+  Product.find().then(result => {
     res.send(result);
   });
 });
@@ -135,7 +136,7 @@ app.get('/ProductsFromDB', (req, res)=> {
 //delete a products
 app.delete('/deleteProduct/:id',(req,res) => {
   const idParam = req.params.id;
-  dbProducts.findOne({_id:idParam}, (err, product) => { //_id refers to mongodb
+  Product.findOne({_id:idParam}, (err, product) => { //_id refers to mongodb
     if (product) {
       dbProducts.deleteOne({_id:idParam}, err => {
         res.send('deleted');
@@ -150,12 +151,12 @@ app.delete('/deleteProduct/:id',(req,res) => {
 // update products
 app.patch('/updateProduct/:id',(req,res)=> {
   const idParam = req.params.id;
-  dbProducts.findById(idParam,(err,product)=> {
+  Product.findById(idParam,(err,product)=> {
     const updatedProduct = {
       productname:req.body.productname,
       price : req.body.price
     };
-    dbProducts.updateOne({_id:idParam}, updatedProduct).then(result => {
+    Product.updateOne({_id:idParam}, updatedProduct).then(result => {
       res.send(result);
     }).catch(err => res.send(err));
   }).catch(err => res.send('not found'));
